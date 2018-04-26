@@ -21,7 +21,7 @@ unsigned int Route::numPositions() const
 {
     const bool implemented = true;
     assert(implemented);
-    
+
     return positions.size();
 }
 
@@ -160,7 +160,7 @@ metres Route::maxElevation() const // N0669298
     if (positions.size() == 0)
     {
         throw std::invalid_argument("No positions in provided route");
-    }    
+    }
     degrees maxElev = positions[0].elevation();
     for(auto pos : positions){
         if(pos.elevation() > maxElev)
@@ -179,7 +179,7 @@ degrees Route::maxGradient() const
 
     degrees largestGradient;
     degrees testGradient;
- 
+
     if (distanceBetween(positions[0],positions[1])>0) {
         largestGradient =radToDeg(atan2((positions[1].elevation() - positions[0].elevation()),distanceBetween(positions[1],positions[0])));
         testGradient = largestGradient;
@@ -224,7 +224,7 @@ degrees Route::maxGradient() const
         if(testGradient > largestGradient){
              largestGradient = testGradient;
         }
-        
+
      }
     return largestGradient;
 }
@@ -322,9 +322,13 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     using namespace std;
     using namespace XML::Parser;
     string lat,lon,ele,name,temp,temp2;
-    metres deltaH,deltaV;
+    //Lat is latitude, lon is longitutde, ele is elevation, name is route name
+    //**commented explaining variables
+    metres horizontalDifference,verticalDifference;
+    //**changed variable names to something more indicitive to non-mathematicians
     ostringstream oss,oss2;
-    unsigned int num;
+    unsigned int num = 0;
+    //**initialized variable here rather than later
     this->granularity = granularity;
     if (isFileName){
         ifstream fs(source);
@@ -342,12 +346,12 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     if (! elementExists(source,"rte")) throw domain_error("No 'rte' element.");
     temp = getElement(source, "rte");
     source = getElementContent(temp);
-    if (elementExists(source, "name")) {
+    if (elementExists(source, "name"))
+    {
         temp = getAndEraseElement(source, "name");
         routeName = getElementContent(temp);
         oss << "Route name is: " << routeName << endl;
     }
-    num = 0;
     if (! elementExists(source,"rtept")) throw domain_error("No 'rtept' element.");
     temp = getAndEraseElement(source, "rtept");
     if (! attributeExists(temp,"lat")) throw domain_error("No 'lat' attribute.");
@@ -355,43 +359,59 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     lat = getElementAttribute(temp, "lat");
     lon = getElementAttribute(temp, "lon");
     temp = getElementContent(temp);
-    if (elementExists(temp, "ele")) {
+    if (elementExists(temp, "ele"))
+    {
         temp2 = getElement(temp, "ele");
         ele = getElementContent(temp2);
         Position startPos = Position(lat,lon,ele);
         positions.push_back(startPos);
         oss << "Position added: " << startPos.toString() << endl;
         ++num;
-    } else {
+    }
+    else
+    {
         Position startPos = Position(lat,lon);
         positions.push_back(startPos);
         oss << "Position added: " << startPos.toString() << endl;
         ++num;
     }
-    if (elementExists(temp,"name")) {
+    //**added spaces for legibility and ease of reading
+
+    if (elementExists(temp,"name"))
+    {
         temp2 = getElement(temp,"name");
         name = getElementContent(temp2);
     }
     positionNames.push_back(name);
     Position prevPos = positions.back(), nextPos = positions.back();
-    while (elementExists(source, "rtept")) {
+    while (elementExists(source, "rtept"))
+    {
         temp = getAndEraseElement(source, "rtept");
         if (! attributeExists(temp,"lat")) throw domain_error("No 'lat' attribute.");
         if (! attributeExists(temp,"lon")) throw domain_error("No 'lon' attribute.");
         lat = getElementAttribute(temp, "lat");
         lon = getElementAttribute(temp, "lon");
         temp = getElementContent(temp);
-        if (elementExists(temp, "ele")) {
+        if (elementExists(temp, "ele"))
+        {
             temp2 = getElement(temp, "ele");
             ele = getElementContent(temp2);
             nextPos = Position(lat,lon,ele);
-        } else nextPos = Position(lat,lon);
+        }
+        else nextPos = Position(lat,lon);
+
         if (areSameLocation(nextPos, prevPos)) oss << "Position ignored: " << nextPos.toString() << endl;
-        else {
-            if (elementExists(temp,"name")) {
+        else
+        {
+            if (elementExists(temp,"name"))
+            {
                 temp2 = getElement(temp,"name");
                 name = getElementContent(temp2);
-            } else name = ""; // Fixed bug by adding this.
+            }
+            else name = ""; // Fixed bug by adding this.
+            //**added spaces for legibility and ease of reading
+
+
             positions.push_back(nextPos);
             positionNames.push_back(name);
             oss << "Position added: " << nextPos.toString() << endl;
@@ -402,9 +422,9 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     oss << num << " positions added." << endl;
     routeLength = 0;
     for (unsigned int i = 1; i < num; ++i ) {
-        deltaH = distanceBetween(positions[i-1], positions[i]);
-        deltaV = positions[i-1].elevation() - positions[i].elevation();
-        routeLength += sqrt(pow(deltaH,2) + pow(deltaV,2));
+        horizontalDifference = distanceBetween(positions[i-1], positions[i]);
+        verticalDifference = positions[i-1].elevation() - positions[i].elevation();
+        routeLength += sqrt(pow(horizontalDifference,2) + pow(verticalDifference,2));
     }
     report = oss.str();
 }
