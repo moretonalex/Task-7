@@ -24,8 +24,6 @@ void testRoute(std::string fileName)
 
 
     Route route = Route(filePath, isFileName);
-    Route route = Route(filePath,isFileName);
-
 
     cout << "Route name: " << route.name() << endl;
 

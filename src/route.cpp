@@ -322,13 +322,11 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     using namespace std;
     using namespace XML::Parser;
     string lat,lon,ele,name,temp,temp2;
-    //Lat is latitude, lon is longitutde, ele is elevation, name is route name
-    //**commented explaining variables
-    metres horizontalDifference,verticalDifference;
-    //**changed variable names to something more indicitive to non-mathematicians
+    metres horizontalDiff,verticalDiff;
+    //**changed names to somethign a little easier to understand for non-mathematicians
     ostringstream oss,oss2;
     unsigned int num = 0;
-    //**initialized variable here rather than later
+    //**initialised here to avoid later confusion
     this->granularity = granularity;
     if (isFileName){
         ifstream fs(source);
@@ -340,18 +338,22 @@ Route::Route(std::string source, bool isFileName, metres granularity)
         }
         source = oss2.str();
     }
-    if (! elementExists(source,"gpx")) throw domain_error("No 'gpx' element.");
-    temp = getElement(source, "gpx");
-    source = getElementContent(temp);
-    if (! elementExists(source,"rte")) throw domain_error("No 'rte' element.");
-    temp = getElement(source, "rte");
-    source = getElementContent(temp);
-    if (elementExists(source, "name"))
-    {
+    //if (! elementExists(source,"gpx")) throw domain_error("No 'gpx' element.");
+    //temp = getElement(source, "gpx");
+    //source = getElementContent(temp);
+    //if (! elementExists(source,"rte")) throw domain_error("No 'rte' element.");
+    //temp = getElement(source, "rte");
+    //source = getElementContent(temp);
+    source = pullElement(source, "gpx");
+    source = pullElement(source, "rte");
+    //** replaced repeated code with function
+
+    if (elementExists(source, "name")) {
         temp = getAndEraseElement(source, "name");
         routeName = getElementContent(temp);
         oss << "Route name is: " << routeName << endl;
     }
+    //num = 0;
     if (! elementExists(source,"rtept")) throw domain_error("No 'rtept' element.");
     temp = getAndEraseElement(source, "rtept");
     if (! attributeExists(temp,"lat")) throw domain_error("No 'lat' attribute.");
@@ -359,59 +361,44 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     lat = getElementAttribute(temp, "lat");
     lon = getElementAttribute(temp, "lon");
     temp = getElementContent(temp);
-    if (elementExists(temp, "ele"))
-    {
+    if (elementExists(temp, "ele")) {
         temp2 = getElement(temp, "ele");
         ele = getElementContent(temp2);
         Position startPos = Position(lat,lon,ele);
         positions.push_back(startPos);
         oss << "Position added: " << startPos.toString() << endl;
         ++num;
-    }
-    else
-    {
+    } else {
         Position startPos = Position(lat,lon);
         positions.push_back(startPos);
         oss << "Position added: " << startPos.toString() << endl;
         ++num;
-    }
-    //**added spaces for legibility and ease of reading
 
-    if (elementExists(temp,"name"))
-    {
+    }
+    if (elementExists(temp,"name")) {
         temp2 = getElement(temp,"name");
         name = getElementContent(temp2);
     }
     positionNames.push_back(name);
     Position prevPos = positions.back(), nextPos = positions.back();
-    while (elementExists(source, "rtept"))
-    {
+    while (elementExists(source, "rtept")) {
         temp = getAndEraseElement(source, "rtept");
         if (! attributeExists(temp,"lat")) throw domain_error("No 'lat' attribute.");
         if (! attributeExists(temp,"lon")) throw domain_error("No 'lon' attribute.");
         lat = getElementAttribute(temp, "lat");
         lon = getElementAttribute(temp, "lon");
         temp = getElementContent(temp);
-        if (elementExists(temp, "ele"))
-        {
+        if (elementExists(temp, "ele")) {
             temp2 = getElement(temp, "ele");
             ele = getElementContent(temp2);
             nextPos = Position(lat,lon,ele);
-        }
-        else nextPos = Position(lat,lon);
-
+        } else nextPos = Position(lat,lon);
         if (areSameLocation(nextPos, prevPos)) oss << "Position ignored: " << nextPos.toString() << endl;
-        else
-        {
-            if (elementExists(temp,"name"))
-            {
+        else {
+            if (elementExists(temp,"name")) {
                 temp2 = getElement(temp,"name");
                 name = getElementContent(temp2);
-            }
-            else name = ""; // Fixed bug by adding this.
-            //**added spaces for legibility and ease of reading
-
-
+            } else name = ""; // Fixed bug by adding this.
             positions.push_back(nextPos);
             positionNames.push_back(name);
             oss << "Position added: " << nextPos.toString() << endl;
@@ -422,11 +409,29 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     oss << num << " positions added." << endl;
     routeLength = 0;
     for (unsigned int i = 1; i < num; ++i ) {
-        horizontalDifference = distanceBetween(positions[i-1], positions[i]);
-        verticalDifference = positions[i-1].elevation() - positions[i].elevation();
-        routeLength += sqrt(pow(horizontalDifference,2) + pow(verticalDifference,2));
+        horizontalDiff = distanceBetween(positions[i-1], positions[i]);
+        verticalDiff = positions[i-1].elevation() - positions[i].elevation();
+        routeLength += sqrt(pow(horizontalDiff,2) + pow(verticalDiff,2));
     }
     report = oss.str();
+}
+
+std::string Route::pullElement(std::string elementSource, std::string elementName)
+{
+    using namespace XML::Parser;
+    if (! elementExists(elementSource,elementName)) throw std::domain_error("No "+ elementName+" element.");
+    return getElement(elementSource, elementName);
+}
+
+void Route::getLatLon(std::string temp, std::string source, std::string lat, std::string lon)
+{
+    using namespace XML::Parser;
+    temp = getAndEraseElement(source, "rtept");
+    if (! attributeExists(temp,"lat")) throw std::domain_error("No 'lat' attribute.");
+    if (! attributeExists(temp,"lon")) throw std::domain_error("No 'lon' attribute.");
+    lat = getElementAttribute(temp, "lat");
+    lon = getElementAttribute(temp, "lon");
+    temp = getElementContent(temp);
 }
 
 void Route::setGranularity(metres granularity)

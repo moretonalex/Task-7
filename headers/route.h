@@ -12,6 +12,7 @@ namespace GPS
   class Route
   {
     public:
+
       /*  Routes are constructed from GPX data.  The data can be provided as a string, or from a file.
        *  Any route points closer together than a certain minimum distance are discarded.
        */
@@ -21,7 +22,6 @@ namespace GPS
 
       // Returns a report of the construction process; useful for debugging purposes.
       std::string buildReport() const;
-
       /* Update the granularity of the stored Route.  Any position in the Route that differs in distance
        * from its predecessor by less than the updated granularity is discarded.
        */
@@ -91,6 +91,11 @@ namespace GPS
       // Compute how many times the specified route point is visited during the route.
       unsigned int timesVisited(const std::string & soughtName) const;
       unsigned int timesVisited(const Position &) const;
+
+      std::string getElements(std::string temp, std::string source, std::string lat, std::string lon);
+      std::string pullElement(std::string source, std::string ElementName);
+      void getLatLon(std::string temp, std::string source, std::string lat, std::string lon);   
+      void addPos(std::string posName, unsigned int num);
 
     protected:
       Route() {} // Only called by Track constructor.
