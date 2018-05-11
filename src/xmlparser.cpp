@@ -1,5 +1,7 @@
 #include <cassert>
 #include <utility>
+#include <stdexcept>
+
 
 #include "xmlparser.h"
 
@@ -142,6 +144,19 @@ namespace XML
       size_t attributeValueEnd   = attributes.find("\"",attributeValueBegin);
 
       return attributes.substr(attributeValueBegin, attributeValueEnd - attributeValueBegin);
+  }
+
+  string pullAttribute(string attributeSource, string attributeName)
+  {
+      if (! attributeExists(attributeSource, attributeName)) throw std::domain_error("No " +attributeName+" element.");
+      return getElementAttribute(attributeSource, attributeName);//Added new function
+  }
+
+  string pullElement(string elementSource, string elementName)
+  {
+
+      if (! elementExists(elementSource,elementName)) throw std::domain_error("No "+ elementName+" element.");
+      return getElement(elementSource, elementName);//Added new function
   }
  }
 }

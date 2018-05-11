@@ -3,6 +3,8 @@
 
 #include <string>
 
+
+
 namespace XML
 {
  namespace Parser
@@ -46,6 +48,10 @@ namespace XML
    *  Pre-condition: the argument is a valid XML element.
    */
   std::string getElementAttribute(const std::string & element, const std::string & attributeName);
+
+  std::string pullAttribute(std::string attributeSource, std::string attributeName);
+
+  std::string pullElement(std::string elementSource, std::string elementName);
 
  }
 }
