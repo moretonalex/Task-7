@@ -79,6 +79,8 @@
         ostringstream oss,oss2;
         unsigned int num = 0;
         this->granularity = granularity;
+
+
         if (isFileName)
         {
             ifstream fs(source);
@@ -93,12 +95,16 @@
         }
             XML::Parser::pullElement (source, "gpx");
             XML::Parser::pullElement (source, "trk");
+
+
         if (elementExists(source, "name"))
         {
             temp = getAndEraseElement(source, "name");
             routeName = getElementContent(temp);
             oss << "Track name is: " << routeName << endl;
         }
+
+
         while (elementExists(source, "trkseg"))
         {
             temp = getAndEraseElement(source, "trkseg");
@@ -106,13 +112,16 @@
             getAndEraseElement(trkseg, "name");
             mergedTrkSegs += trkseg;
         }
+
+
         if (! mergedTrkSegs.empty()) source = mergedTrkSegs;
         if (! elementExists(source,"trkpt")) throw domain_error("No 'trkpt' element.");
         setLatLon(temp, source, lat, lon);
+
+
         if (elementExists(temp, "ele"))
         {
-            temp2 = getElement(temp, "ele");
-            ele = getElementContent(temp2);
+            setElement (temp, temp2, ele, "ele");
             Position startPos = Position(lat,lon,ele);
             positions.push_back(startPos);
             oss << "Start position added: " << startPos.toString() << endl;
@@ -130,13 +139,16 @@
         {
             setElement (temp, temp2, name, "name");
         }
+
+
         pushBack (name, 0);
         if (! elementExists(temp,"time")) throw domain_error("No 'time' element.");
         setElement (temp, temp2, time, "time");
         startTime = currentTime = stringToTime(time);
         Position prevPos = positions.back(), nextPos = positions.back();
-        while (elementExists(source, "trkpt"))
 
+
+        while (elementExists(source, "trkpt"))
         {
             setLatLon(temp, source, lat, lon);
             if (elementExists(temp, "ele"))
@@ -146,10 +158,11 @@
             }
             else nextPos = Position(lat,lon);
 
+
             if (! elementExists(temp,"time")) throw domain_error("No 'time' element.");
-            temp2 = getElement(temp,"time");
-            time = getElementContent(temp2);
+            setElement (temp, temp2, time, "time");
             currentTime = stringToTime(time);
+
 
             if (areSameLocation(nextPos, prevPos))
             {
@@ -210,11 +223,7 @@
         departed.push_back(time);
     }
 
-    void Track::setElement (std::string temp, std::string temp2, std::string elementName, std::string elementName2)
-    {
-        temp2 = XML::Parser::getElement(temp,elementName2);
-        elementName = XML::Parser::getElementContent(temp2);
-    }
+
 
     void Track::setLatLon (std::string temp, std::string source, std::string lat, std::string lon)
     {

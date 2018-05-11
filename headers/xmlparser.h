@@ -53,6 +53,7 @@ namespace XML
 
   std::string pullElement(std::string elementSource, std::string elementName);
 
+  void setElement (std::string temp, std::string temp2, std::string elementName, std::string elementName2);
  }
 }
 

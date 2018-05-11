@@ -158,5 +158,11 @@ namespace XML
       if (! elementExists(elementSource,elementName)) throw std::domain_error("No "+ elementName+" element.");
       return getElement(elementSource, elementName);//Added new function
   }
+
+  void setElement (std::string temp, std::string temp2, std::string elementName, std::string elementName2)
+  {
+      temp2 = XML::Parser::getElement(temp,elementName2);
+      elementName = XML::Parser::getElementContent(temp2);
+  }
  }
 }

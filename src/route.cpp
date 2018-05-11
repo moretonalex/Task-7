@@ -324,10 +324,8 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     using namespace XML::Parser;
     string lat,lon,ele,name,temp,temp2;
     metres horizontalDiff,verticalDiff;
-    //**changed names to somethign a little easier to understand for non-mathematicians
     ostringstream oss,oss2;
     unsigned int num = 0;
-    //**initialised here to avoid later confusion
     this->granularity = granularity;
     if (isFileName){
         ifstream fs(source);
@@ -342,9 +340,9 @@ Route::Route(std::string source, bool isFileName, metres granularity)
 
     source = XML::Parser::pullElement(source, "gpx");
     source = XML::Parser::pullElement(source, "rte");
-    //** replaced repeated code with function
 
-    if (elementExists(source, "name")) {
+    if (elementExists(source, "name"))
+    {
         temp = getAndEraseElement(source, "name");
         routeName = getElementContent(temp);
         oss << "Route name is: " << routeName << endl;
@@ -352,7 +350,6 @@ Route::Route(std::string source, bool isFileName, metres granularity)
     if (! elementExists(source,"rtept")) throw domain_error("No 'rtept' element.");
     temp = getAndEraseElement(source, "rtept");
     temp = getElementContent(temp);
-    // ** function replaced
     lat = pullAttribute(temp, "lat");
     lon = pullAttribute(temp, "lon");
 
@@ -371,32 +368,28 @@ Route::Route(std::string source, bool isFileName, metres granularity)
 
     }
     if (elementExists(temp,"name")) {
-        temp2 = getElement(temp,"name");
-        name = getElementContent(temp2);
+        setElement(temp, temp2, name, "name");
     }
     positionNames.push_back(name);
     Position prevPos = positions.back(), nextPos = positions.back();
-    while (elementExists(source, "rtept")) {
+    while (elementExists(source, "rtept"))
+    {
         temp = getAndEraseElement(source, "rtept");
-        //if (! attributeExists(temp,"lat")) throw domain_error("No 'lat' attribute.");
-        //if (! attributeExists(temp,"lon")) throw domain_error("No 'lon' attribute.");
-        //lat = getElementAttribute(temp, "lat");
-        //lon = getElementAttribute(temp, "lon");
-        // ** function replaced
         temp = getElementContent(temp);
         lat = pullAttribute(temp, "lat");
         lon = pullAttribute(temp, "lon");
-        if (elementExists(temp, "ele")) {
-            temp2 = getElement(temp, "ele");
-            ele = getElementContent(temp2);
+        if (elementExists(temp, "ele"))
+        {
+            setElement(temp, temp2, ele, "ele");
             nextPos = Position(lat,lon,ele);
         } else nextPos = Position(lat,lon);
         if (areSameLocation(nextPos, prevPos)) oss << "Position ignored: " << nextPos.toString() << endl;
         else {
-            if (elementExists(temp,"name")) {
-                temp2 = getElement(temp,"name");
-                name = getElementContent(temp2);
-            } else name = ""; // Fixed bug by adding this.
+            if (elementExists(temp,"name"))
+            {
+                setElement(temp, temp2, name, "name");
+            }
+            else name = ""; // Fixed bug by adding this.
             positions.push_back(nextPos);
             positionNames.push_back(name);
             oss << "Position added: " << nextPos.toString() << endl;
