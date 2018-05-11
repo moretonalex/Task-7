@@ -60,6 +60,9 @@ namespace GPS
       std::vector<seconds> departed;
 
       static seconds stringToTime(const std::string &);
+      void pushBack (std::string name, seconds time);
+      void setElement (std::string temp, std::string temp2, std::string elementName, std::string elementName2);
+      void setLatLon (std::string temp, std::string source, std::string lat, std::string lon);
   };
 }
 
